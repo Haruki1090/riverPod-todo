@@ -10,17 +10,23 @@ void main() {
 }
 
 ///StateProvider
-final todoListProvider = StateProvider((ref) => <Todo>[]);
+final todoListProvider = StateProvider((ref) => <TodoList>[]);
 
 ///Todoのクラス
-class Todo {
+class TodoList {
   final String title;
   bool isDone;
 
-  Todo({
+  TodoList({
     required this.title,
     this.isDone = false,
   });
+
+  TodoList copyWith({String? title, bool? isDone}) => TodoList(
+    title: title ?? 'タイトルなし',
+    isDone: isDone ?? false,
+  );
+
 }
 
 class MyApp extends StatelessWidget {
@@ -51,17 +57,28 @@ class MyHomePage extends ConsumerWidget {
     final todoList = ref.watch(todoListProvider);
 
     void add() {
-      ref.watch(todoListProvider.notifier).update((state) {
-        var newTodo = Todo(
+      ///追加ボタンを押したときの処理
+      ref.read(todoListProvider.notifier).update((state) {
+        ///新しいTodoを作成
+        var newTodo = TodoList(
           title: editedControllerValue.text,
           isDone: false,
         );
-        ///stateをコピーして新しいTodoを追加(削除ボタン用にListをコピーする必要があるため)
-        var newState = List<Todo>.from(state);
-        newState.add(newTodo);
-
+        ///Stateを更新
+        var newState = List<TodoList>.from(state);
+        ///同じタイトルのTodoがあれば上書き、なければ追加
+        var index = newState.indexWhere((todo) => todo.title == newTodo.title);
+        if (index != -1) {
+          newState[index] = newState[index].copyWith(title: newTodo.title ,isDone: newTodo.isDone);
+        } else {
+          ///indexが-1であれば、同じタイトルのTodoがないということ -> 追加
+          newState.add(newTodo);
+        }
+        ///Stateを更新
         return newState;
       });
+
+      editedControllerValue.clear();
     }
 
     return Scaffold(
@@ -95,7 +112,6 @@ class MyHomePage extends ConsumerWidget {
             ElevatedButton(
               onPressed: () {
                 add();
-                editedControllerValue.clear();
               },
               child: const Text('追加'),
             ),
@@ -109,7 +125,7 @@ class MyHomePage extends ConsumerWidget {
                       value: todoList[index].isDone,
                       onChanged: (bool? value) {
                         ref.read(todoListProvider.notifier).update((state) {
-                          var newState = List<Todo>.from(state);
+                          var newState = List<TodoList>.from(state);
                           newState[index].isDone = value!;
                           return newState;
                         });
@@ -121,7 +137,7 @@ class MyHomePage extends ConsumerWidget {
                       icon: const Icon(Icons.delete),
                       onPressed: () {
                         ref.read(todoListProvider.notifier).update((state) {
-                          var newState = List<Todo>.from(state);
+                          var newState = List<TodoList>.from(state);
                           newState.removeAt(index);
                           return newState;
                         });

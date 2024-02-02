@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -58,8 +59,6 @@ class MyHomePage extends ConsumerWidget {
         ///stateをコピーして新しいTodoを追加(削除ボタン用にListをコピーする必要があるため)
         var newState = List<Todo>.from(state);
         newState.add(newTodo);
-        ///同様にチェックボックス用にもコピー
-        var newState2 = List<Todo>.from(state);
 
         return newState;
       });
@@ -74,13 +73,25 @@ class MyHomePage extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'ToDoを入力してください',
+            Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        hintText: 'ToDoを入力してください',
+                      ),
+                      controller: editedControllerValue,
+                    ),
+                  ),
+                ),
               ),
-              controller: editedControllerValue,
-            ),
-            const SizedBox(height: 20,),
+            const SizedBox(height: 5,),
             ElevatedButton(
               onPressed: () {
                 add();
